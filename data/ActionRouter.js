@@ -1,73 +1,52 @@
 const express = require('express');
-const projectDb = require('./helpers/projectModel.js');
+const actionDb = require('./helpers/actionModel.js');
 const router = express.Router();
 
 // CRUD OPERATORS
 // POST - CREATE
 router.post('/', async (req, res) => {
-	const { name, description } = req.body;
+	const { project_id, description } = req.body;
 	try {
-		if(name && description) {
-			const project = await projectDb.insert({ name, description });
+		if(project_id && description) {
+			const action = await actionDb.insert({ project_id, description });
 			res
 				.status(201)
-				.json(project);
+				.json(action);
 		}
 		else {
 			res
 				.status(404)
-				.json({ message: "Name and description for project are required." });
+				.json({ message: "Project ID and description for action are required." });
 		}
 	}
 	catch (err) {
 		res
 			.status(500)
-			.json({ err: "There was an error while saving the project to the database." });
+			.json({ err: "There was an error while saving the action to the database." });
 	}
 });
 
 // GET - READ
 router.get('/', async (req, res) => {
 	try {
-		const projects = await projectDb.get();
+		const actions = await actionDb.get();
 		res
 			.status(200)
-			.json(projects);
+			.json(actions);
 	}
 	catch (err) {
 		res
 			.status(500)
-			.json({ error: "The project information could not be retrieved." });
-	}
-});
-
-// GET PROJECT ACTIONS
-router.get('/:id', async (req, res) => {
-	try {
-		const projectActions = await projectDb.getProjectActions(req.params.id);
-		if (projectActions) {
-			res
-				.json(projectActions);
-		}
-		else {
-			res
-				.status(400)
-				.json({ message: "No actions for this project" });
-		}
-	}
-	catch (err) {
-		res
-			.status(500)
-			.json({ err: "Actions could not be retrieved." });
+			.json({ error: "The actions could not be retrieved." });
 	}
 });
 
 
 // PUT - UPDATE
-router.put('/:id', (req, res) => {
+/*router.put('/:id', (req, res) => {
 	const { id } = req.params;
 	const newProject = req.body;
-	projectDb
+	actionDb
 		.update(id, newProject)
 		.then(project => {
 			if(project) { 
@@ -90,7 +69,7 @@ router.put('/:id', (req, res) => {
 // DELETE 
 router.delete('/:id', async (req, res) => {
 	try {
-		const project = await projectDb.remove(req.params.id);
+		const project = await actionDb.remove(req.params.id);
 		if(project) {
 			res.json({ removed: "Your project has been deleted!" });
 		}
@@ -105,6 +84,6 @@ router.delete('/:id', async (req, res) => {
 			.status(500)
 			.json({ err: "The project could not be removed" });
 	}
-});
+});*/
 
 module.exports = router;
