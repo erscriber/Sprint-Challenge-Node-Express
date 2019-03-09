@@ -5,27 +5,57 @@ const router = express.Router();
 // CRUD OPERATORS
 // POST - CREATE
 router.post('/', async (req, res) => {
-	const { project_id, description } = req.body;
+	const { project_id, description} = req.body;
+	if(!project_id || !description) {
+		res
+			.status(400)
+			.json({ message: "The project id and description are missing!" })
+	}
 	try {
-		if(project_id && description) {
-			const action = await actionDb.insert({ project_id, description });
+		const action = await actionDb.insert(req.params.id, req.body);
 			res
 				.status(201)
 				.json(action);
-		}
-		else {
-			res
-				.status(404)
-				.json({ message: "Project ID and description for action are required." });
-		}
 	}
 	catch (err) {
 		res
 			.status(500)
-			.json({ err: "There was an error while saving the action to the database." });
+			.json({ error: "The action information could not be modified." });
 	}
 });
-
+/*const { project_id, description} = req.body;
+	if(!project_id || !description) {
+		res
+			.status(400)
+			.json({ message: "The project id and description are missing!" })
+	}
+	try {
+		const newAction = await actionDb.insert({ project_id, description });
+		res
+			.json(newAction);
+	}
+	catch (err) {
+		res
+			.status(500)
+			.json({ error: "The action could not be added. "});
+	}
+	const { project_id, description } = req.body;
+	const newAction = { project_id, description };
+	if(!project_id || !description) {
+		res
+			.status(400)
+			.json({ message: "The project id and action description are missing!" })
+	}
+	else {
+		actionDb
+			.insert(newAction)
+			.then(newAction => res.json(newAction))
+			.catch(err => 
+				res
+					.status(500)
+					.json({ error: "Failed adding new project!" })
+			);
+	}*/
 // GET - READ
 router.get('/', async (req, res) => {
 	try {
@@ -43,47 +73,52 @@ router.get('/', async (req, res) => {
 
 
 // PUT - UPDATE
-/*router.put('/:id', (req, res) => {
-	const { id } = req.params;
-	const newProject = req.body;
-	actionDb
-		.update(id, newProject)
-		.then(project => {
-			if(project) { 
+router.put('/:id', async (req, res) => {
+	try {
+		const updateAction = await actionDb.update(req.params.id, req.body);
+		if (req.params.id && req.body) {
+			if(updateAction) {
 				res
-					.json(project);
+					.status(200)
+					.json(updateAction);
 			}
 			else {
 				res
 					.status(404)
-					.json({ error: "Project with specified id not found." })
+					.json({ message: "The action with the specified ID does not exist." });
 			}
-		})
-		.catch(err =>
-			res
-				.status(500)
-				.json({ error: "Failed updating project!" })
-		);
-});
-
-// DELETE 
-router.delete('/:id', async (req, res) => {
-	try {
-		const project = await actionDb.remove(req.params.id);
-		if(project) {
-			res.json({ removed: "Your project has been deleted!" });
 		}
 		else {
 			res
-				.status(404)
-				.json({ message: "The project with specified ID does not exist." });
+				.status(400)
+				.json({ message: "Please provide project id and contents for the post." });
 		}
 	}
 	catch (err) {
 		res
 			.status(500)
-			.json({ err: "The project could not be removed" });
+			.json({ error: "The action information could not be modified." });
 	}
-});*/
+});
+
+// DELETE 
+router.delete('/:id', async (req, res) => {
+	try {
+		const action = await actionDb.remove(req.params.id);
+		if(action) {
+			res.json(action);
+		}
+		else {
+			res
+				.status(404)
+				.json({ message: "The action with specified ID does not exist." });
+		}
+	}
+	catch (err) {
+		res
+			.status(500)
+			.json({ err: "The action could not be removed" });
+	}
+});
 
 module.exports = router;
